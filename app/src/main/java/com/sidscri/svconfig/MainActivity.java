@@ -134,9 +134,9 @@ public class MainActivity extends Activity {
             "    pickM3u:      wrap('pickM3u')," +
             "    readFile:     wrap('readFile')," +
             "    scanDrives:   wrap('scanDrives')," +
-            \"    networkPing:  wrap('networkPing'),\" +
-            \"    networkInject:wrap('networkInject'),\" +
-            \"    networkScan:  wrap('networkScan'),\" +
+            "    networkPing:  wrap('networkPing')," +
+            "    networkInject:wrap('networkInject')," +
+            "    networkScan:  wrap('networkScan')," +
             "    saveBackup:function(args){" +
             "      return new Promise(function(resolve){" +
             "        var id=String(++__id);" +
