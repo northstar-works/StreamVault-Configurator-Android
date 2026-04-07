@@ -118,12 +118,20 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac)}
 #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--ac);color:#fff;padding:8px 18px;border-radius:16px;font-size:12px;opacity:0;transition:all .25s;pointer-events:none;z-index:999}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 code{background:var(--c2);padding:1px 5px;border-radius:3px;font-size:10px}
+/* My Teams autocomplete */
+#mt-suggestions{position:absolute;top:100%;left:0;right:0;z-index:400;background:var(--c1);border:1px solid var(--bd);border-radius:var(--rs);max-height:180px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.5);display:none;margin-top:2px}
+.mt-sug-row{padding:8px 12px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--bd);color:var(--t1)}
+.mt-sug-row:hover{background:var(--ac);color:#fff}
+.mt-sug-row:last-child{border-bottom:none}
+.mt-sug-typed{color:var(--ac);font-weight:600;border-top:1px solid var(--bd)}
+.lt-box{background:rgba(108,92,231,.08);border:1px solid rgba(108,92,231,.2);border-radius:6px;padding:8px 10px;margin-top:6px}
+.lt-label{font-size:10px;color:var(--ac);font-weight:700;margin-bottom:4px}
 </style>
 </head>
 <body>
 
 <div id="topbar">
-  <h1>⚙ StreamVault Configurator</h1><span style="font-size:9px;color:var(--t3);margin-left:-4px">v4.1.0 Android</span>
+  <h1>⚙ StreamVault Configurator</h1><span style="font-size:9px;color:var(--t3);margin-left:-4px">v5.0.0 b7 Android</span>
   <span id="file-label">No file — click New or Open</span>
   <button class="tb tb-ghost" onclick="newCfg()">New</button>
   <button class="tb tb-ghost" onclick="openFile()">Open…</button>
@@ -214,7 +222,7 @@ code{background:var(--c2);padding:1px 5px;border-radius:3px;font-size:10px}
 <!-- ═══ SPORTS ═══ -->
 <div class="panel" id="panel-sports">
   <div class="ph">Live Sports</div>
-  <div class="pd">Configure leagues, ESPN paths, and pinned teams for My Teams Only filtering.</div>
+  <div class="pd">Configure sport channel groups, ESPN schedule paths, and your teams for filtering.</div>
   <div class="ss">
     <h3>Sport Filtering</h3>
     <div class="sr">
@@ -225,6 +233,23 @@ code{background:var(--c2);padding:1px 5px;border-radius:3px;font-size:10px}
       <div><div class="sl">Show past/completed games</div><div class="sd">Include finished games in the schedule</div></div>
       <div class="tgl on" id="tgl-sportPast" onclick="tglSet(this,'sportShowPastGames')"></div>
     </div>
+  </div>
+  <!-- ② Global My Teams -->
+  <div class="ss">
+    <h3>② My Teams — applies to all sport groups</h3>
+    <p style="font-size:11px;color:var(--t2);margin-bottom:10px">Add your teams once here. StreamVault matches them to games across every sport group by ESPN path.</p>
+    <div id="my-teams-list"></div>
+    <div style="position:relative;margin-top:8px">
+      <div style="display:flex;gap:6px">
+        <input id="mt-input" placeholder="Search: Rangers, Cowboys, Stars…" autocomplete="off"
+          style="flex:1;padding:6px 9px;background:var(--bg);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:12px"
+          oninput="onMtInput(this.value)"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();addMtFromInput()}">
+        <button class="bs" onclick="addMtFromInput()">Add</button>
+      </div>
+      <div id="mt-suggestions"></div>
+    </div>
+    <div class="hint" style="margin-top:6px">Type a team name — ESPN suggestions appear automatically. Pick one or type your own and press Add.</div>
   </div>
   <div class="ss">
     <h3>① Add sport channel groups from a repo</h3>
@@ -244,7 +269,7 @@ code{background:var(--c2);padding:1px 5px;border-radius:3px;font-size:10px}
     <button class="bc" style="width:100%" onclick="autoDetectLeagues()">🔍 Auto-detect sport groups from repos</button>
   </div>
   <div class="ss">
-    <h3>② Configure leagues &amp; pin your teams</h3>
+    <h3>③ Configure groups &amp; ESPN paths</h3>
     <div id="league-list"><p style="font-size:11px;color:var(--t3)">No leagues added yet.</p></div>
   </div>
 </div>
@@ -638,21 +663,15 @@ const ESPN_LEAGUE_MAP = [
   {keys:['liga mx'],                                      path:'soccer/mex.1',                       label:'Liga MX'},
   {keys:['ufc','mma','ultimate fighting'],                path:'mma/ufc',                            label:'UFC/MMA'},
   {keys:['boxing','ppv boxing'],                          path:'boxing/boxing',                      label:'Boxing'},
-  {keys:['f1','formula 1','formula one'],                 path:'racing/f1',                          label:'F1'},
-  {keys:['nascar'],                                       path:'racing/nascar',                      label:'NASCAR'},
+  {keys:['formula 1','formula one','f1'],                 path:'racing/f1',                          label:'Formula 1'},
+  {keys:['racing','nascar'],                              path:'racing/nascar',                      label:'NASCAR'},
   {keys:['tennis','atp','wta'],                           path:'tennis/atp',                         label:'Tennis'},
   {keys:['golf','pga'],                                   path:'golf/leaderboard',                   label:'Golf'},
   {keys:['cricket'],                                      path:'cricket/icc-cricket',                label:'Cricket'},
-  {keys:['ufc','mma'],                                    path:'mma/ufc',                            label:'UFC/MMA'},
-  {keys:['boxing'],                                       path:'boxing/boxing',                      label:'Boxing'},
-  {keys:['f1','formula 1','formula one'],                 path:'racing/f1',                          label:'F1'},
-  {keys:['nascar'],                                       path:'racing/nascar',                      label:'NASCAR'},
-  {keys:['tennis'],                                       path:'tennis/atp',                         label:'Tennis'},
-  {keys:['golf'],                                         path:'golf/leaderboard',                   label:'Golf'},
 ];
 const SPORT_KW = ESPN_LEAGUE_MAP.flatMap(e=>e.keys).concat([
   'sport','sports','ufc','mma','boxing','rugby','cricket','tennis','golf','nascar',
-  'f1','formula','afl','cfl','lacrosse','softball','racing','fight',
+  'f1','formula','afl','cfl','lacrosse','softball','racing','wrestling','fight',
 ]);
 function guessEspnPaths(name) {
   const gl=name.toLowerCase();
@@ -670,9 +689,10 @@ function isSportGroup(n){const l=n.toLowerCase();return SPORT_KW.some(k=>l.inclu
 const TAB_LABELS={itv:'ITV',plex:'PlexStr',icam:'iCam',local:'Local',network:'Network'};
 const repoStreams={};
 let cfg=blank(), filePath=null;
+let _mtSugg=[],_mtTimer=null; // ESPN team autocomplete state
 
 function blank(){return{
-  type:'streamvault-backup',version:'5.1.5',build:88,exportedAt:Date.now(),
+  type:'streamvault-backup',version:'5.3.9',build:111,exportedAt:Date.now(),
   items:[],repos:[],epgSrc:[],epgData:{channels:{},programs:{}},
   settings:{
     localities:[],startupChannel:'',defaultEpgSource:'',foTimeout:15,
@@ -683,6 +703,7 @@ function blank(){return{
     timeshiftEnabled:true,timeshiftMaxMin:30,
     dvrCfg:{remoteEnabled:false,proto:'ftp',host:'',port:'21',user:'',pass:'',path:'/recordings'},
     sportLeagueFilterEnabled:true,sportLeagues:[],sportShowPastGames:true,
+    myTeams:[], // [{name, espnPath, leagueLabel}] — global, applied to all leagues
     localEnable:true,localPath:'',
     icamCfg:{proto:'rtsp',host:'',port:'554',user:'',pass:'',name:''},
     networkCfg:{lanScanAuto:false},
@@ -949,12 +970,17 @@ async function autoDetectLeagues(){
 function renderLeagues(){
   const el=gi('league-list');if(!el)return;
   const lgs=cfg.settings.sportLeagues||[];
-  if(!lgs.length){el.innerHTML='<p style="font-size:11px;color:var(--t3)">No leagues added yet. Use ① above to add.</p>';return;}
+  if(!lgs.length){el.innerHTML='<p style="font-size:11px;color:var(--t3)">No groups added yet. Use ① above to add.</p>';return;}
   el.innerHTML=lgs.map((lg,i)=>{
-    const pins=(lg.pinnedTeams||[]).map((p,pi)=>`<span class="tag">${esc(p)}<button onclick="rmPin(${i},${pi})">✕</button></span>`).join('');
     const selP=new Set(lg.espnPaths||[]);
     const chips=ESPN_LEAGUE_MAP.map(ep=>`<span class="esp-chip${selP.has(ep.path)?' on':''}" onclick="togglePath(${i},'${ep.path}',this)">${esc(ep.label)}</span>`).join('');
     const repoName=lg.repoId?((cfg.repos||[]).find(r=>r.id===lg.repoId)||{}).name||'Repo':'Library';
+    // Show global My Teams matched to this league's ESPN paths
+    const lgPaths=lg.espnPaths||[];
+    const matched=(cfg.settings.myTeams||[]).filter(t=>lgPaths.length>0?(t.espnPath&&lgPaths.includes(t.espnPath)):true);
+    const teamsHtml=matched.length
+      ?matched.map(t=>esc(t.name)+(t.leagueLabel?` <span style="font-size:10px;color:var(--t3)">(${esc(t.leagueLabel)})</span>`:'')).join(', ')
+      :'<span style="color:var(--t3);font-size:10px">None matched — add your teams in ② My Teams above</span>';
     return `<div class="card">
       <div class="card-head">
         <div class="card-name">${esc(lg.groupName)}</div>
@@ -969,21 +995,86 @@ function renderLeagues(){
       <div class="field" style="margin-bottom:6px"><label class="fl">ESPN schedule paths — click to toggle</label>
         <div class="esp-wrap">${chips}</div>
       </div>
-      <div class="field"><label class="fl">📌 Pinned teams (My Teams Only filter + team pill tabs)</label>
-        <div class="tags" id="pins-${i}">${pins||'<span style="font-size:10px;color:var(--t3)">None pinned</span>'}</div>
-        <div class="tag-row">
-          <input id="pin-in-${i}" placeholder="e.g. Rangers, Cowboys, Stars…" onkeydown="if(event.key==='Enter'){event.preventDefault();addPin(${i})}">
-          <button class="bs" onclick="addPin(${i})">Pin</button>
-        </div>
-      </div>
+      <div class="lt-box"><div class="lt-label">✨ My Teams matching this group</div><div style="font-size:11px">${teamsHtml}</div></div>
     </div>`;
   }).join('');
 }
 function toggleLg(i,el){cfg.settings.sportLeagues[i].enabled=!cfg.settings.sportLeagues[i].enabled;el.classList.toggle('on');}
-function togglePath(i,path,el){const arr=cfg.settings.sportLeagues[i].espnPaths||[];const ix=arr.indexOf(path);if(ix>=0)arr.splice(ix,1);else arr.push(path);cfg.settings.sportLeagues[i].espnPaths=arr;el.classList.toggle('on');}
+function togglePath(i,path,el){const arr=cfg.settings.sportLeagues[i].espnPaths||[];const ix=arr.indexOf(path);if(ix>=0)arr.splice(ix,1);else arr.push(path);cfg.settings.sportLeagues[i].espnPaths=arr;el.classList.toggle('on');renderLeagues();}
 function rmLeague(i){cfg.settings.sportLeagues.splice(i,1);renderLeagues();updateBadges();}
-function addPin(i){const inp=gi('pin-in-'+i);const val=inp&&inp.value.trim().toLowerCase();if(!val)return;if(!cfg.settings.sportLeagues[i].pinnedTeams)cfg.settings.sportLeagues[i].pinnedTeams=[];if(!cfg.settings.sportLeagues[i].pinnedTeams.includes(val))cfg.settings.sportLeagues[i].pinnedTeams.push(val);if(inp)inp.value='';const pe=gi('pins-'+i);if(pe)pe.innerHTML=cfg.settings.sportLeagues[i].pinnedTeams.map((p,pi)=>`<span class="tag">${esc(p)}<button onclick="rmPin(${i},${pi})">✕</button></span>`).join('');}
-function rmPin(i,pi){cfg.settings.sportLeagues[i].pinnedTeams.splice(pi,1);renderLeagues();}
+
+// ═══ MY TEAMS (global) ═══════════════════════════════════════════════════════
+function renderMyTeams(){
+  const el=gi('my-teams-list');if(!el)return;
+  const teams=cfg.settings.myTeams||[];
+  if(!teams.length){el.innerHTML='<p style="font-size:11px;color:var(--t3);margin-bottom:4px">No teams yet. Search below to add.</p>';return;}
+  el.innerHTML=teams.map((t,i)=>`
+    <div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--bd)">
+      <div style="flex:1;font-size:12px">
+        <strong>${esc(t.name)}</strong>${t.leagueLabel?` <span style="font-size:10px;color:var(--t3)">(${esc(t.leagueLabel)})</span>`:''}
+      </div>
+      ${t.espnPath?`<span style="font-size:10px;color:var(--ac);background:var(--acs);padding:1px 5px;border-radius:4px">${esc((ESPN_LEAGUE_MAP.find(e=>e.path===t.espnPath)||{}).label||t.espnPath)}</span>`:'<span style="font-size:10px;color:var(--t3)">Custom</span>'}
+      <button onclick="rmMyTeam(${i})" class="del-btn" title="Remove">✕</button>
+    </div>`).join('');
+}
+function rmMyTeam(i){
+  if(!cfg.settings.myTeams)return;
+  cfg.settings.myTeams.splice(i,1);
+  renderMyTeams();renderLeagues();
+  toast('Team removed');
+}
+function addMyTeamEntry(name,espnPath,leagueLabel){
+  if(!name)return;
+  if(!cfg.settings.myTeams)cfg.settings.myTeams=[];
+  if(cfg.settings.myTeams.find(t=>t.name.toLowerCase()===name.toLowerCase())){toast('Already added');return;}
+  cfg.settings.myTeams.push({name,espnPath:espnPath||'',leagueLabel:leagueLabel||''});
+  const inp=gi('mt-input');if(inp)inp.value='';
+  _mtSugg=[];const sug=gi('mt-suggestions');if(sug)sug.style.display='none';
+  renderMyTeams();renderLeagues();
+  toast('📌 Added: '+name);
+}
+function addMtFromInput(){
+  const inp=gi('mt-input');
+  const val=inp?inp.value.trim():'';
+  if(!val){toast('Enter a team name');return;}
+  addMyTeamEntry(val,'','');
+}
+function onMtInput(val){
+  clearTimeout(_mtTimer);
+  const sug=gi('mt-suggestions');
+  if(!val||val.length<2){_mtSugg=[];if(sug)sug.style.display='none';return;}
+  _mtTimer=setTimeout(()=>_fetchMtSugg(val),350);
+}
+async function _fetchMtSugg(q){
+  try{
+    const resp=await fetch('https://site.api.espn.com/apis/common/v3/search?query='+encodeURIComponent(q)+'&limit=8&type=team&lang=en&region=us');
+    const j=await resp.json();
+    _mtSugg=(j.items||[]).filter(x=>x.displayName||x.shortDisplayName).map(x=>{
+      const name=x.displayName||x.shortDisplayName||'';
+      const sport=(x.sport&&(x.sport.slug||x.sport.name||''))||'';
+      const league=(x.league&&(x.league.slug||x.league.abbreviation||''))||'';
+      let espnPath=(sport&&league)?(sport.toLowerCase()+'/'+league.toLowerCase()):'';
+      const known=ESPN_LEAGUE_MAP.find(e=>e.path===espnPath||(league&&e.keys.some(k=>k===league.toLowerCase())));
+      if(known)espnPath=known.path;
+      return{name,espnPath,leagueLabel:known?known.label:(league?league.toUpperCase():'')}
+    });
+    _renderMtSugg(q);
+  }catch(e){_mtSugg=[];}
+}
+function _renderMtSugg(typed){
+  const sug=gi('mt-suggestions');if(!sug)return;
+  if(!_mtSugg.length){sug.style.display='none';return;}
+  sug.innerHTML=_mtSugg.map(t=>
+    `<div class="mt-sug-row" onclick="addMyTeamEntry('${esc(t.name).replace(/'/g,"\\'")}','${t.espnPath}','${t.leagueLabel}')">`
+    +esc(t.name)+(t.leagueLabel?` <span style="font-size:10px;color:var(--t3)">(${esc(t.leagueLabel)})</span>`:'')
+    +'</div>'
+  ).join('')+(typed?`<div class="mt-sug-row mt-sug-typed" onclick="addMyTeamEntry('${esc(typed).replace(/'/g,"\\'")}','','')">✚ Add as typed: &quot;${esc(typed)}&quot;</div>`:'');
+  sug.style.display='block';
+}
+document.addEventListener('click',function(e){
+  const sug=gi('mt-suggestions'),inp=gi('mt-input');
+  if(sug&&inp&&!sug.contains(e.target)&&e.target!==inp)sug.style.display='none';
+});
 
 // ═══ PLEX ═════════════════════════════════════════════════════════════════════
 function renderPlex(){
@@ -1149,7 +1240,8 @@ function rmLoc(i){cfg.settings.localities.splice(i,1);renderLocalities();}
 
 // ═══ Render all ═══════════════════════════════════════════════════════════════
 function renderAll(){
-  renderChannels();renderRepos();renderEpg();renderLeagues();
+  renderChannels();renderRepos();renderEpg();
+  renderMyTeams();renderLeagues();
   renderSportRepoSel();renderChannelRepoSel();
   syncTgl('tgl-sportFilter',cfg.settings.sportLeagueFilterEnabled!==false);
   syncTgl('tgl-sportPast',cfg.settings.sportShowPastGames!==false);
@@ -1171,6 +1263,22 @@ async function openFile(){
     if(cfg.settings.plex)cfg.settings.plex={...b.settings.plex,...cfg.settings.plex};
     if(cfg.settings.dvrCfg)cfg.settings.dvrCfg={...b.settings.dvrCfg,...cfg.settings.dvrCfg};
     (cfg.settings.sportLeagues||[]).forEach(lg=>{lg.cachedGamesByPath={};lg.cacheDate='';});
+    // Migrate old per-league pinnedTeams → global myTeams (one-time)
+    if(!cfg.settings.myTeams||!cfg.settings.myTeams.length){
+      const migrated=[];
+      (cfg.settings.sportLeagues||[]).forEach(lg=>{
+        const paths=lg.espnPaths||[];
+        (lg.pinnedTeams||[]).forEach(name=>{
+          if(!migrated.find(t=>t.name===name)){
+            const ep=paths.length===1?paths[0]:'';
+            const known=ESPN_LEAGUE_MAP.find(e=>e.path===ep);
+            migrated.push({name,espnPath:ep,leagueLabel:known?known.label:''});
+          }
+        });
+      });
+      if(migrated.length){cfg.settings.myTeams=migrated;toast('📌 Migrated '+migrated.length+' team'+(migrated.length!==1?'s':'')+' to global My Teams');}
+      else cfg.settings.myTeams=[];
+    }
     filePath=result.path;gi('file-label').textContent=result.path.split(/[/\\]/).pop();
     renderAll();status('Loaded: '+result.path);toast('Backup loaded ✓');
   }catch(e){toast('Error: '+e.message);}
@@ -1179,6 +1287,7 @@ function buildJson(){
   const out=JSON.parse(JSON.stringify(cfg));
   out.exportedAt=Date.now();
   (out.settings.sportLeagues||[]).forEach(lg=>{lg.cachedGamesByPath={};lg.cacheDate='';});
+  if(!out.settings.myTeams)out.settings.myTeams=[];
   out.epgData={channels:{},programs:{}};out.settings.altCache={};
   return JSON.stringify(out,null,2);
 }
