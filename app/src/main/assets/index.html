@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=1100">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>StreamVault Configurator</title>
 <style>
 :root{
@@ -12,13 +12,13 @@
   --gn:#2ecc71;--rd:#e74c3c;--or:#f39c12;--rs:8px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--t1);font-family:-apple-system,system-ui,sans-serif;font-size:13px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+body{background:var(--bg);color:var(--t1);font-family:-apple-system,system-ui,sans-serif;font-size:15px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
 
 /* Top bar */
-#topbar{background:var(--c1);border-bottom:1px solid var(--bd);padding:8px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0}
-#topbar h1{font-size:14px;font-weight:700;color:var(--ac);margin-right:4px}
-#file-label{font-size:10px;color:var(--t3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tb{padding:5px 12px;border-radius:var(--rs);border:none;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit}
+#topbar{background:var(--c1);border-bottom:1px solid var(--bd);padding:10px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
+#topbar h1{font-size:16px;font-weight:700;color:var(--ac);margin-right:2px}
+#file-label{font-size:11px;color:var(--t3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.tb{padding:9px 14px;border-radius:var(--rs);border:none;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;min-height:40px}
 .tb-ghost{background:var(--c2);color:var(--t2);border:1px solid var(--bd)}
 .tb-ghost:hover{color:var(--t1);border-color:var(--ac)}
 .tb-primary{background:var(--ac);color:#fff}
@@ -26,101 +26,115 @@ body{background:var(--bg);color:var(--t1);font-family:-apple-system,system-ui,sa
 .tb-green{background:#27ae60;color:#fff}
 .tb-green:hover{background:#2ecc71}
 
-/* Layout */
-#layout{display:flex;flex:1;overflow:hidden}
+/* Layout — mobile: vertical stack; sidebar becomes horizontal scroll nav */
+#layout{display:flex;flex-direction:column;flex:1;overflow:hidden}
 
-/* Sidebar */
-#sidebar{width:172px;flex-shrink:0;background:var(--c1);border-right:1px solid var(--bd);padding:8px 0;overflow-y:auto}
-.nav-sec{padding:12px 14px 3px;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em}
-.nav-item{padding:8px 14px;cursor:pointer;font-size:12px;color:var(--t2);border-left:3px solid transparent;display:flex;align-items:center;gap:7px}
+/* Sidebar → horizontal scrolling tab bar */
+#sidebar{
+  display:flex;flex-direction:row;flex-shrink:0;
+  background:var(--c1);border-bottom:1px solid var(--bd);
+  overflow-x:auto;overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;padding:0;white-space:nowrap;
+}
+#sidebar::-webkit-scrollbar{display:none}
+.nav-sec{display:none} /* hide section labels in horizontal mode */
+.nav-item{
+  display:inline-flex;flex-direction:column;align-items:center;gap:2px;
+  padding:10px 14px;cursor:pointer;font-size:12px;color:var(--t2);
+  border-bottom:3px solid transparent;flex-shrink:0;
+  border-left:none;white-space:nowrap;
+}
 .nav-item:hover{background:var(--c2);color:var(--t1)}
-.nav-item.on{background:var(--acs);color:var(--ac);border-left-color:var(--ac);font-weight:600}
-.nav-badge{background:var(--ac);color:#fff;border-radius:10px;font-size:9px;padding:1px 5px;margin-left:auto}
+.nav-item.on{background:var(--acs);color:var(--ac);border-bottom-color:var(--ac);border-left:none;font-weight:600}
+.nav-badge{background:var(--ac);color:#fff;border-radius:10px;font-size:10px;padding:1px 6px;margin-left:0;margin-top:1px}
+.nav-item span:first-child{font-size:16px} /* emoji */
 
 /* Content */
-#content{flex:1;overflow-y:auto;padding:18px 20px}
+#content{flex:1;overflow-y:auto;padding:14px 14px 80px}
 .panel{display:none}.panel.on{display:block}
-.ph{font-size:16px;font-weight:700;margin-bottom:3px}
-.pd{font-size:11px;color:var(--t3);margin-bottom:16px}
+.ph{font-size:18px;font-weight:700;margin-bottom:4px}
+.pd{font-size:13px;color:var(--t3);margin-bottom:14px}
 
 /* Settings section + row (matches app) */
 .ss{background:var(--c1);border:1px solid var(--bd);border-radius:var(--rs);padding:14px 16px;margin-bottom:12px}
-.ss h3{font-size:11px;font-weight:700;color:var(--ac);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em}
-.sr{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.ss h3{font-size:13px;font-weight:700;color:var(--ac);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em}
+.sr{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04)}
 .sr:last-child{border-bottom:none}
-.sl{font-size:12px;color:var(--t1);flex:1}
-.sd{font-size:10px;color:var(--t3);margin-top:1px}
+.sl{font-size:15px;color:var(--t1);flex:1}
+.sd{font-size:12px;color:var(--t3);margin-top:2px}
 
 /* Form */
-.field{margin-bottom:10px}
-.fl{display:block;font-size:10px;color:var(--t2);margin-bottom:3px}
+.field{margin-bottom:14px}
+.fl{display:block;font-size:12px;color:var(--t2);margin-bottom:5px}
 .field input,.field select,.field textarea,
 input[type=text],input[type=number],input[type=url],input[type=password],select,textarea{
-  width:100%;padding:6px 9px;background:var(--bg);border:1px solid var(--bd);
-  border-radius:6px;color:var(--t1);font-size:12px;font-family:inherit}
+  width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--bd);
+  border-radius:6px;color:var(--t1);font-size:15px;font-family:inherit;min-height:44px;box-sizing:border-box}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac)}
-.hint{font-size:10px;color:var(--t3);margin-top:2px}
-.rw{display:flex;gap:8px}.rw .field,.rw>div{flex:1}
+.hint{font-size:12px;color:var(--t3);margin-top:4px;line-height:1.4}
+/* Stack .rw rows vertically on mobile */
+.rw{display:flex;flex-direction:column;gap:0}.rw .field,.rw>div{flex:1}
 
 /* Buttons */
-.bs{background:var(--ac);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:11px;cursor:pointer;font-family:inherit}
+.bs{background:var(--ac);color:#fff;border:none;border-radius:6px;padding:11px 16px;font-size:14px;cursor:pointer;font-family:inherit;min-height:44px}
 .bs:hover{background:#7d6df0}
-.bc{background:var(--c2);color:var(--t1);border:1px solid var(--bd);border-radius:6px;padding:6px 12px;font-size:11px;cursor:pointer;font-family:inherit}
+.bc{background:var(--c2);color:var(--t1);border:1px solid var(--bd);border-radius:6px;padding:11px 16px;font-size:14px;cursor:pointer;font-family:inherit;min-height:44px}
 .bc:hover{border-color:var(--ac);color:var(--ac)}
-.btn-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 
-/* Toggle */
-.tgl{width:34px;height:19px;background:var(--bd);border-radius:10px;cursor:pointer;position:relative;flex-shrink:0;transition:background .2s}
+/* Toggle — larger for touch */
+.tgl{width:50px;height:28px;background:var(--bd);border-radius:14px;cursor:pointer;position:relative;flex-shrink:0;transition:background .2s}
 .tgl.on{background:var(--ac)}
-.tgl::after{content:'';position:absolute;width:15px;height:15px;background:#fff;border-radius:50%;top:2px;left:2px;transition:left .2s}
-.tgl.on::after{left:17px}
+.tgl::after{content:'';position:absolute;width:22px;height:22px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left .2s}
+.tgl.on::after{left:25px}
 
 /* Card */
-.card{background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);padding:12px;margin-bottom:8px}
-.card-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.card-name{flex:1;font-size:13px;font-weight:600}
-.del-btn{background:none;border:none;color:var(--t3);cursor:pointer;font-size:16px;padding:0 3px;line-height:1}
+.card{background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);padding:14px;margin-bottom:10px}
+.card-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.card-name{flex:1;font-size:15px;font-weight:600}
+.del-btn{background:none;border:none;color:var(--t3);cursor:pointer;font-size:22px;padding:4px 6px;line-height:1;min-width:36px;min-height:36px}
 .del-btn:hover{color:var(--rd)}
 
 /* Tags */
 .tags{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}
-.tag{display:inline-flex;align-items:center;gap:3px;background:var(--acs);color:var(--ac);border:1px solid var(--acsh);border-radius:4px;padding:2px 7px;font-size:11px}
+.tag{display:inline-flex;align-items:center;gap:5px;background:var(--acs);color:var(--ac);border:1px solid var(--acsh);border-radius:6px;padding:5px 10px;font-size:14px}
 .tag button{background:none;border:none;color:var(--t3);cursor:pointer;font-size:11px;line-height:1;padding:0}
 .tag button:hover{color:var(--rd)}
 .tag-row{display:flex;gap:6px;margin-top:6px}
-.tag-row input{flex:1;padding:5px 8px;background:var(--bg);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:11px}
+.tag-row input{flex:1;padding:10px 12px;background:var(--bg);border:1px solid var(--bd);border-radius:6px;color:var(--t1);font-size:15px;min-height:44px}
 
 /* ESPN chips */
 .esp-wrap{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
-.esp-chip{padding:3px 9px;background:var(--c2);border:1px solid var(--bd);border-radius:4px;font-size:11px;cursor:pointer;color:var(--t2);user-select:none}
+.esp-chip{padding:7px 12px;background:var(--c2);border:1px solid var(--bd);border-radius:6px;font-size:13px;cursor:pointer;color:var(--t2);user-select:none}
 .esp-chip.on{background:var(--acs);border-color:var(--ac);color:var(--ac)}
 
 /* Add button */
-.add-btn{display:flex;align-items:center;gap:6px;padding:7px 12px;background:var(--c2);border:1px dashed var(--bd);border-radius:var(--rs);cursor:pointer;color:var(--t2);font-size:12px;width:100%;margin-top:4px;font-family:inherit}
+.add-btn{display:flex;align-items:center;gap:8px;padding:13px 16px;background:var(--c2);border:1px dashed var(--bd);border-radius:var(--rs);cursor:pointer;color:var(--t2);font-size:15px;width:100%;margin-top:6px;font-family:inherit;min-height:48px}
 .add-btn:hover{border-color:var(--ac);color:var(--ac)}
 
 /* Tab order */
-.tab-row{display:flex;align-items:center;gap:8px;background:var(--c2);padding:7px 10px;border-radius:6px;user-select:none;margin-bottom:4px}
-.tab-row span{flex:1;font-size:12px}
-.tab-row button{background:none;border:none;color:var(--t3);cursor:pointer;font-size:13px;padding:0 2px}
+.tab-row{display:flex;align-items:center;gap:10px;background:var(--c2);padding:11px 14px;border-radius:6px;user-select:none;margin-bottom:6px}
+.tab-row span{flex:1;font-size:15px}
+.tab-row button{background:none;border:none;color:var(--t3);cursor:pointer;font-size:22px;padding:4px 8px;min-height:40px}
 .tab-row button:hover{color:var(--t1)}
 .tab-row button:disabled{opacity:.2;pointer-events:none}
 
 /* Status label */
-.status-ok{color:var(--gn);font-size:10px}
-.status-err{color:var(--rd);font-size:10px}
+.status-ok{color:var(--gn);font-size:13px}
+.status-err{color:var(--rd);font-size:13px}
 
 /* JSON */
 #json-pre{background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);padding:12px;font-family:monospace;font-size:11px;color:var(--t2);white-space:pre-wrap;word-break:break-all;max-height:420px;overflow-y:auto}
 
 /* Footer */
-#statusbar{background:var(--c1);border-top:1px solid var(--bd);padding:4px 14px;font-size:10px;color:var(--t3);flex-shrink:0}
-#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--ac);color:#fff;padding:8px 18px;border-radius:16px;font-size:12px;opacity:0;transition:all .25s;pointer-events:none;z-index:999}
+#statusbar{background:var(--c1);border-top:1px solid var(--bd);padding:8px 14px;font-size:12px;color:var(--t3);flex-shrink:0}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--ac);color:#fff;padding:12px 22px;border-radius:20px;font-size:15px;opacity:0;transition:all .25s;pointer-events:none;z-index:999;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 code{background:var(--c2);padding:1px 5px;border-radius:3px;font-size:10px}
 /* My Teams autocomplete */
 #mt-suggestions{position:absolute;top:100%;left:0;right:0;z-index:400;background:var(--c1);border:1px solid var(--bd);border-radius:var(--rs);max-height:180px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.5);display:none;margin-top:2px}
-.mt-sug-row{padding:8px 12px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--bd);color:var(--t1)}
+.mt-sug-row{padding:12px 16px;cursor:pointer;font-size:15px;border-bottom:1px solid var(--bd);color:var(--t1)}
 .mt-sug-row:hover{background:var(--ac);color:#fff}
 .mt-sug-row:last-child{border-bottom:none}
 .mt-sug-typed{color:var(--ac);font-weight:600;border-top:1px solid var(--bd)}
@@ -131,12 +145,12 @@ code{background:var(--c2);padding:1px 5px;border-radius:3px;font-size:10px}
 <body>
 
 <div id="topbar">
-  <h1>⚙ StreamVault Configurator</h1><span style="font-size:9px;color:var(--t3);margin-left:-4px">v5.0.0 b7 Android</span>
+  <h1>⚙ StreamVault Configurator</h1><span style="font-size:9px;color:var(--t3);margin-left:-4px">v5.8.3 b168 Android</span>
   <span id="file-label">No file — click New or Open</span>
   <button class="tb tb-ghost" onclick="newCfg()">New</button>
   <button class="tb tb-ghost" onclick="openFile()">Open…</button>
-  <button class="tb tb-primary" onclick="saveFile()">Save As…</button>
-  <button class="tb tb-green" onclick="saveInject()">💾 Save to USB inject/</button>
+  <button class="tb tb-primary" onclick="saveFile()">Save</button>
+  <button class="tb tb-green" onclick="saveInject()">💾 USB inject</button>
 </div>
 
 <div id="layout">
@@ -147,6 +161,7 @@ code{background:var(--c2);padding:1px 5px;border-radius:3px;font-size:10px}
   <div class="nav-item"    data-p="epg"        onclick="nav(this)">📅 <span>EPG</span><span class="nav-badge" id="nb-epg">0</span></div>
   <div class="nav-item"    data-p="sports"     onclick="nav(this)">🏟 <span>Sports</span><span class="nav-badge" id="nb-sports">0</span></div>
   <div class="nav-sec">Services</div>
+  <div class="nav-item"    data-p="hdhr"       onclick="nav(this)">📡 <span>HDHomeRun</span></div>
   <div class="nav-item"    data-p="plex"       onclick="nav(this)">🎬 <span>Plex / PlexStr</span></div>
   <div class="nav-item"    data-p="dvr"        onclick="nav(this)">⏺ <span>DVR</span></div>
   <div class="nav-item"    data-p="icam"       onclick="nav(this)">📷 <span>iCam</span><span class="nav-badge" id="nb-icam">0</span></div>
@@ -281,6 +296,66 @@ code{background:var(--c2);padding:1px 5px;border-radius:3px;font-size:10px}
     <div id="league-list"><p style="font-size:11px;color:var(--t3)">No leagues added yet.</p></div>
   </div>
 </div>
+
+<!-- ═══ HDHomeRun ═══ -->
+<div class="panel" id="panel-hdhr">
+  <div class="ph">HDHomeRun</div>
+  <div class="pd">Configure remote access, guide data, and mobile proxy for HDHomeRun tuners.</div>
+
+  <div class="ss">
+    <h3>Remote / Mobile Access</h3>
+    <div class="sr">
+      <div><div class="sl">Tailscale / VPN mode</div><div class="sd">Phone connects to HDHR directly over Tailscale subnet routing. Best option — no proxy needed. Mutually exclusive with Remote Relay.</div></div>
+      <div class="tgl on" id="tgl-hdhr-ts" onclick="tglHdhrTs(this)"></div>
+    </div>
+    <div class="sr">
+      <div><div class="sl">Remote relay (no VPN)</div><div class="sd">For cellular or networks without Tailscale. Routes streams through your hdhr-xmltv server's ffmpeg proxy. Set your relay URL below.</div></div>
+      <div class="tgl" id="tgl-hdhr-remote" onclick="tglHdhrRemote(this)"></div>
+    </div>
+    <div class="field" style="margin-top:8px">
+      <label class="fl">Remote HDHR base URL</label>
+      <input type="url" id="f-hdhr-remoteBaseUrl" placeholder="https://hdhr.yourdomain.com"
+        oninput="getHdhr().remoteBaseUrl=this.value">
+      <div class="hint">Your hdhr-xmltv subdomain. Streams are proxied to /proxy/v4.1 etc. for ffmpeg H.264 transcoding.</div>
+    </div>
+  </div>
+
+  <div class="ss">
+    <h3>Mobile Software Decoder Proxy</h3>
+    <p style="font-size:11px;color:var(--t2);margin-bottom:10px">
+      Android phones can't decode MPEG-2 video natively. Enable this to route HDHR streams through an ffmpeg proxy on your server for H.264 transcoding. Leave off if using Tailscale or a relay URL (both handle transcoding already).
+    </p>
+    <div class="sr">
+      <div><div class="sl">Enable mobile proxy</div><div class="sd">Route HDHR streams through your proxy server for H.264 transcoding on mobile</div></div>
+      <div class="tgl" id="tgl-hdhr-mobileProxy" onclick="tglSet2('hdhr','mobileProxyEnabled',this)"></div>
+    </div>
+    <div class="field" style="margin-top:8px">
+      <label class="fl">Mobile proxy URL</label>
+      <input type="url" id="f-hdhr-mobileProxyUrl" placeholder="https://hdhr.yourdomain.com/proxy"
+        oninput="getHdhr().mobileProxyUrl=this.value">
+      <div class="hint">Base URL for the ffmpeg transcoding proxy (e.g. https://hdhr.sidneyshelton.com). Leave blank to use Remote Relay URL.</div>
+    </div>
+  </div>
+
+  <div class="ss">
+    <h3>Guide / XMLTV</h3>
+    <div class="field">
+      <label class="fl">Guide provider</label>
+      <select id="sel-hdhr-xmltvProvider" onchange="getHdhr().xmltvProvider=this.value;renderHdhrProviderHint()">
+        <option value="schedulesdirect">Schedules Direct (recommended)</option>
+        <option value="hdhr-native">HDHomeRun Native Guide (self-hosted epg.sidneyshelton.com)</option>
+        <option value="custom">Custom XMLTV URL</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="fl">XMLTV guide URL</label>
+      <input type="url" id="f-hdhr-xmltvUrl" placeholder="https://epg.yourdomain.com/hdhr-epg.xmltv"
+        oninput="getHdhr().xmltvUrl=this.value">
+      <div class="hint" id="hdhr-xmltv-hint">Optional. Used to auto-match EPG guide IDs for HDHR channels. Required for Schedules Direct and Custom; auto-populated for HDHomeRun Native.</div>
+    </div>
+  </div>
+</div>
+
 
 <!-- ═══ PLEX ═══ -->
 <div class="panel" id="panel-plex">
@@ -716,11 +791,18 @@ function blank(){return{
     timeshiftEnabled:true,timeshiftMaxMin:30,
     dvrCfg:{remoteEnabled:false,proto:'ftp',host:'',port:'21',user:'',pass:'',path:'/recordings'},
     sportLeagueFilterEnabled:true,sportLeagues:[],sportShowPastGames:true,
-    myTeams:[],
+    myTeams:[], // [{name, espnPath, leagueLabel}] — global, applied to all leagues
     excludedLeagues:[], allGamesExtraEnabled:false, sportDefaultMyTeams:true,
     localEnable:true,localPath:'',
     icamCfg:{proto:'rtsp',host:'',port:'554',user:'',pass:'',name:''},
     networkCfg:{lanScanAuto:false},
+    hdhr:{
+      devices:[], repoChannels:[], selectedChannelKeys:[],
+      remoteBaseUrl:'', preferRemote:false, tailscaleMode:true,
+      xmltvUrl:'', xmltvProvider:'schedulesdirect',
+      mobileProxyEnabled:false, mobileProxyUrl:'',
+    },
+    manualStreamMatches:{},
   },
 };}
 
@@ -732,6 +814,7 @@ function nav(el){
   const p=document.getElementById('panel-'+el.dataset.p);
   if(p) p.classList.add('on');
   if(el.dataset.p==='preview') updatePreview();
+  if(el.dataset.p==='hdhr') renderHdhr();
 }
 
 // ═══ Utilities ════════════════════════════════════════════════════════════════
@@ -1252,6 +1335,62 @@ function renderLocalities(){
 function addLoc(){const inp=gi('loc-in');const val=inp&&inp.value.trim();if(!val)return;if(!cfg.settings.localities)cfg.settings.localities=[];if(!cfg.settings.localities.includes(val))cfg.settings.localities.push(val);inp.value='';renderLocalities();}
 function rmLoc(i){cfg.settings.localities.splice(i,1);renderLocalities();}
 
+
+// ═══ HDHomeRun ════════════════════════════════════════════════════════════════
+function getHdhr(){
+  if(!cfg.settings.hdhr)cfg.settings.hdhr={};
+  const h=cfg.settings.hdhr;
+  if(h.devices===undefined)h.devices=[];
+  if(h.remoteBaseUrl===undefined)h.remoteBaseUrl='';
+  if(h.preferRemote===undefined)h.preferRemote=false;
+  if(h.tailscaleMode===undefined)h.tailscaleMode=true;
+  if(h.xmltvUrl===undefined)h.xmltvUrl='';
+  if(h.xmltvProvider===undefined)h.xmltvProvider='schedulesdirect';
+  if(h.mobileProxyEnabled===undefined)h.mobileProxyEnabled=false;
+  if(h.mobileProxyUrl===undefined)h.mobileProxyUrl='';
+  return h;
+}
+function tglSet2(section,key,el){
+  if(!cfg.settings[section])cfg.settings[section]={};
+  cfg.settings[section][key]=!cfg.settings[section][key];
+  el.classList.toggle('on',!!cfg.settings[section][key]);
+}
+function tglHdhrTs(el){
+  const h=getHdhr();
+  h.tailscaleMode=!h.tailscaleMode;
+  if(h.tailscaleMode)h.preferRemote=false;
+  el.classList.toggle('on',h.tailscaleMode);
+  syncTgl('tgl-hdhr-remote',h.preferRemote);
+}
+function tglHdhrRemote(el){
+  const h=getHdhr();
+  h.preferRemote=!h.preferRemote;
+  if(h.preferRemote)h.tailscaleMode=false;
+  el.classList.toggle('on',h.preferRemote);
+  syncTgl('tgl-hdhr-ts',h.tailscaleMode);
+}
+function renderHdhrProviderHint(){
+  const hints={
+    'schedulesdirect':'Schedules Direct: enter your XMLTV export URL from schedulesdirect.org or your proxy feed.',
+    'hdhr-native':'HDHomeRun Native: enter your self-hosted hdhr-xmltv server URL (e.g. https://epg.sidneyshelton.com/hdhr-epg.xmltv).',
+    'custom':'Custom: enter any XMLTV feed URL (.xml or .xml.gz).',
+  };
+  const prov=(gi('sel-hdhr-xmltvProvider')||{}).value||'schedulesdirect';
+  const hint=gi('hdhr-xmltv-hint');
+  if(hint)hint.textContent=hints[prov]||hints['custom'];
+}
+function renderHdhr(){
+  const h=getHdhr();
+  syncTgl('tgl-hdhr-ts',h.tailscaleMode!==false);
+  syncTgl('tgl-hdhr-remote',!!h.preferRemote);
+  syncTgl('tgl-hdhr-mobileProxy',!!h.mobileProxyEnabled);
+  sv('f-hdhr-remoteBaseUrl',h.remoteBaseUrl);
+  sv('f-hdhr-mobileProxyUrl',h.mobileProxyUrl);
+  sv('sel-hdhr-xmltvProvider',h.xmltvProvider||'schedulesdirect');
+  sv('f-hdhr-xmltvUrl',h.xmltvUrl);
+  renderHdhrProviderHint();
+}
+
 // ═══ Render all ═══════════════════════════════════════════════════════════════
 function renderAll(){
   renderChannels();renderRepos();renderEpg();
@@ -1263,7 +1402,7 @@ function renderAll(){
   syncTgl('tgl-allGamesExtra',!!cfg.settings.allGamesExtraEnabled);
   if(!cfg.settings.excludedLeagues)cfg.settings.excludedLeagues=[];
   if(cfg.settings.sportDefaultMyTeams===undefined)cfg.settings.sportDefaultMyTeams=true;
-  renderPlex();renderDvr();renderIcam();renderNetwork();renderLocal();
+  renderHdhr();renderPlex();renderDvr();renderIcam();renderNetwork();renderLocal();
   renderStartupSel();
   renderGeneral();renderPlayback();renderLocalities();updateBadges();
 }
