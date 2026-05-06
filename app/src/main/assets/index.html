@@ -145,7 +145,7 @@ code{background:var(--c2);padding:1px 5px;border-radius:3px;font-size:10px}
 <body>
 
 <div id="topbar">
-  <h1>⚙ StreamVault Configurator</h1><span style="font-size:9px;color:var(--t3);margin-left:-4px">v5.8.3 b168 Android</span>
+  <h1>⚙ StreamVault Configurator</h1><span style="font-size:9px;color:var(--t3);margin-left:-4px">v6.0.0 b13 Android</span>
   <span id="file-label">No file — click New or Open</span>
   <button class="tb tb-ghost" onclick="newCfg()">New</button>
   <button class="tb tb-ghost" onclick="openFile()">Open…</button>
@@ -168,6 +168,7 @@ code{background:var(--c2);padding:1px 5px;border-radius:3px;font-size:10px}
   <div class="nav-item"    data-p="network"    onclick="nav(this)">🌐 <span>Network</span></div>
   <div class="nav-item"    data-p="local"      onclick="nav(this)">📁 <span>Local Videos</span></div>
   <div class="nav-sec">App</div>
+  <div class="nav-item"    data-p="vod"        onclick="nav(this)">🎬 <span>VOD</span></div>
   <div class="nav-item"    data-p="general"    onclick="nav(this)">⚙ <span>General</span></div>
   <div class="nav-item"    data-p="playback"   onclick="nav(this)">▶ <span>Playback</span></div>
   <div class="nav-item"    data-p="localities" onclick="nav(this)">📍 <span>Localities</span></div>
@@ -542,6 +543,116 @@ code{background:var(--c2);padding:1px 5px;border-radius:3px;font-size:10px}
   </div>
 </div>
 
+<!-- ═══ VOD ═══ -->
+<div class="panel" id="panel-vod">
+  <div class="ph">VOD Settings</div>
+  <div class="pd">Pre-configure VOD — applied automatically when this backup is imported or injected into StreamVault.</div>
+
+  <div class="ss">
+    <h3>TMDB</h3>
+    <div class="field">
+      <label class="fl">API Key</label>
+      <input id="vod-tmdb-key" placeholder="your_tmdb_api_key" autocomplete="off"
+        oninput="vodCfg().tmdbKey=this.value">
+      <div class="hint">Free at <strong>themoviedb.org</strong> — unlocks posters, ratings, cast &amp; synopsis</div>
+    </div>
+  </div>
+
+  <div class="ss">
+    <h3>Playback</h3>
+    <div class="sr">
+      <div><div class="sl">ITV Movie Detection</div><div class="sd">While watching live TV, check if program is available on demand</div></div>
+      <div class="tgl on" id="vod-tgl-itv" onclick="vodTgl('enableItvMatch',this)"></div>
+    </div>
+    <div class="sr">
+      <div><div class="sl">Auto-scan repos</div><div class="sd">Fetch repos automatically when VOD page opens</div></div>
+      <div class="tgl on" id="vod-tgl-scan" onclick="vodTgl('autoScan',this)"></div>
+    </div>
+  </div>
+
+  <div class="ss">
+    <h3>Display</h3>
+    <div class="sr">
+      <div><div class="sl">Titles per row</div><div class="sd">Max cards shown in each genre row</div></div>
+      <input type="number" id="vod-per-row" min="5" max="100" value="25" style="width:70px"
+        oninput="vodCfg().displayCfg.perRow=parseInt(this.value)||25">
+    </div>
+    <div class="sr">
+      <div><div class="sl">Sort rows by</div><div class="sd">Default order within each row</div></div>
+      <select id="vod-sort-by" style="width:160px" onchange="vodCfg().displayCfg.sortBy=this.value">
+        <option value="default">Default (quality score)</option>
+        <option value="rating">TMDB Rating</option>
+        <option value="title">Title A–Z</option>
+        <option value="year">Date Released</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="ss">
+    <h3>Classification Keywords</h3>
+    <div class="field">
+      <label class="fl">Movie keywords</label>
+      <input id="vod-movie-kw" placeholder="vod,movie,film,cinema,4k"
+        oninput="vodCfg().movieKw=this.value">
+      <div class="hint">Group names matching these are auto-classified as Movies</div>
+    </div>
+    <div class="field">
+      <label class="fl">Series keywords</label>
+      <input id="vod-series-kw" placeholder="series,season,episode,show,tvshow"
+        oninput="vodCfg().seriesKw=this.value">
+    </div>
+    <div class="field">
+      <label class="fl">Exclude title keywords</label>
+      <input id="vod-exclude-kw" placeholder="adult,xxx (comma-separated)"
+        oninput="vodCfg().excludeKw=this.value">
+      <div class="hint">Titles containing these keywords are hidden in the VOD page</div>
+    </div>
+  </div>
+
+  <div class="ss">
+    <h3>Standalone VOD Repo</h3>
+    <p style="font-size:11px;color:var(--t2);margin-bottom:10px">A dedicated VOD-only M3U, separate from ITV repos. Using "Only This Repo" mode skips all ITV repos for VOD — faster and uses less memory.</p>
+    <div class="field">
+      <label class="fl">M3U URL</label>
+      <input type="url" id="vod-sa-url" placeholder="https://provider.com/vod.m3u"
+        oninput="vodCfg().standaloneRepo.url=this.value">
+    </div>
+    <div class="field">
+      <label class="fl">Name (optional)</label>
+      <input id="vod-sa-name" placeholder="My VOD Repo"
+        oninput="vodCfg().standaloneRepo.name=this.value">
+    </div>
+    <div class="sr">
+      <div><div class="sl">Use Only This Repo for VOD</div><div class="sd">Skip all other repos for VOD content</div></div>
+      <div class="tgl" id="vod-tgl-sa-only" onclick="vodSaTgl('useOnly',this)"></div>
+    </div>
+  </div>
+
+  <div class="ss">
+    <h3>🎬 Visible Movie Rows</h3>
+    <div class="sd" style="margin-bottom:10px">Toggle rows on/off. Use ↑ ↓ to set the order they appear in VOD.</div>
+    <div id="vod-movie-row-list"></div>
+  </div>
+
+  <div class="ss">
+    <h3>📺 Visible TV Show Rows</h3>
+    <div class="sd" style="margin-bottom:10px">Toggle rows on/off. Use ↑ ↓ to set the order.</div>
+    <div id="vod-show-row-list"></div>
+  </div>
+
+  <div class="ss" style="border:1px solid rgba(108,92,231,.3);background:rgba(108,92,231,.05)">
+    <h3>ℹ How VOD Pre-config Works</h3>
+    <p style="font-size:11px;color:var(--t2);line-height:1.7">
+      These settings are saved in the backup JSON under <code>settings.vodConfig</code>.<br>
+      When StreamVault imports this backup (via USB inject or Network Inject), it reads <code>vodConfig</code>
+      and applies it to the app’s VOD settings — <strong>only if the device has no existing VOD config</strong>
+      (first-time setup or fresh install).<br>
+      To force-apply on an existing install, open the VOD Settings page on the device and use
+      <strong>Scan Repos for Groups</strong> after injecting.
+    </p>
+  </div>
+</div>
+
 <!-- ═══ GENERAL ═══ -->
 <div class="panel" id="panel-general">
   <div class="ph">General</div>
@@ -795,7 +906,7 @@ function blank(){return{
     localities:[],startupChannel:'',defaultEpgSource:'',foTimeout:15,
     foAuto:true,autoAltCheck:true,altCache:{},altLastCheck:0,
     savePath:'',savePathLabel:'',backupPath:'',backupPathLabel:'',
-    schedules:[],tabOrder:['itv','plex','icam','local','network'],
+    schedules:[],tabOrder:['itv','icam','local','network'],
     tvMode:'on',plex:{server:'',token:'',section:'',sections:[]},
     timeshiftEnabled:true,timeshiftMaxMin:30,
     dvrCfg:{remoteEnabled:false,proto:'ftp',host:'',port:'21',user:'',pass:'',path:'/recordings'},
@@ -812,6 +923,20 @@ function blank(){return{
       mobileProxyEnabled:false, mobileProxyUrl:'',
     },
     manualStreamMatches:{},
+    vodConfig:{
+      tmdbKey:'',
+      enableItvMatch:true,
+      autoScan:true,
+      movieKw:'vod,movie,film,cinema,4k',
+      seriesKw:'series,season,episode,show,tvshow',
+      excludeKw:'',
+      standaloneRepo:{url:'',name:'',useOnly:false},
+      displayCfg:{perRow:25,sortBy:'default'},
+      rowCfg:{cont:true,wl:true,recent:true,rated:true,action:true,comedy:true,drama:true,horror:true,scifi:true,thriller:true,war:true,kids:true,crime:true,docu:true,western:true,romance:true,reality:true},
+      showRowCfg:{cont:true,wl:true,recent:true,az:true,drama:true,comedy:true,reality:true,crime:true,scifi:true,kids:true,docu:true},
+      rowOrder:['cont','wl','recent','rated','action','comedy','drama','horror','scifi','thriller','war','kids','crime','docu','western','romance','reality'],
+      showRowOrder:['cont','wl','recent','az','drama','comedy','reality','crime','scifi','kids','docu'],
+    },
   },
 };}
 
@@ -824,6 +949,7 @@ function nav(el){
   if(p) p.classList.add('on');
   if(el.dataset.p==='preview') updatePreview();
   if(el.dataset.p==='hdhr') renderHdhr();
+  if(el.dataset.p==='vod') renderVod();
 }
 
 // ═══ Utilities ════════════════════════════════════════════════════════════════
@@ -1315,7 +1441,7 @@ function renderGeneral(){
 }
 function renderTabOrder(){
   const el=gi('tab-order-list');if(!el)return;
-  const order=cfg.settings.tabOrder||['itv','plex','icam','local','network'];
+  const order=(cfg.settings.tabOrder||['itv','icam','local','network']).filter(function(t){return t!=='plex';});
   el.innerHTML=order.map((tab,i)=>`
     <div class="tab-row">
       <span style="color:var(--t3)">☰</span><span>${TAB_LABELS[tab]||tab}</span>
@@ -1402,6 +1528,81 @@ function renderHdhr(){
   renderHdhrProviderHint();
 }
 
+// ═══ VOD ═════════════════════════════════════════════════════════════════════
+// Row label maps (match b220)
+const MOVIE_ROW_LABELS={cont:'Continue Watching',wl:'My Watch List',recent:'Recently Released',rated:'Highly Rated ★',action:'Action',comedy:'Comedy',drama:'Drama',horror:'Horror',scifi:'Sci-Fi',thriller:'Thriller',war:'War',kids:'Kids & Family',crime:'Crime',docu:'Documentary',western:'Western',romance:'Romance',reality:'Reality'};
+const SHOW_ROW_LABELS={cont:'Continue Watching',wl:'My Watch List',recent:'Recently Aired',az:'All Shows A–Z',drama:'Drama',comedy:'Comedy',reality:'Reality',crime:'Crime',scifi:'Sci-Fi',kids:'Kids',docu:'Documentary'};
+const MOVIE_ROW_DEF=['cont','wl','recent','rated','action','comedy','drama','horror','scifi','thriller','war','kids','crime','docu','western','romance','reality'];
+const SHOW_ROW_DEF=['cont','wl','recent','az','drama','comedy','reality','crime','scifi','kids','docu'];
+
+function vodCfg(){
+  if(!cfg.settings.vodConfig)cfg.settings.vodConfig={};
+  const vc=cfg.settings.vodConfig;
+  if(!vc.standaloneRepo)vc.standaloneRepo={url:'',name:'',useOnly:false};
+  if(!vc.displayCfg)vc.displayCfg={perRow:25,sortBy:'default'};
+  if(!vc.rowCfg)vc.rowCfg={};
+  if(!vc.showRowCfg)vc.showRowCfg={};
+  if(!vc.rowOrder)vc.rowOrder=MOVIE_ROW_DEF.slice();
+  if(!vc.showRowOrder)vc.showRowOrder=SHOW_ROW_DEF.slice();
+  return vc;
+}
+function vodTgl(key,el){const vc=vodCfg();vc[key]=!vc[key];el.classList.toggle('on',!!vc[key]);}
+function vodSaTgl(key,el){const sa=vodCfg().standaloneRepo;sa[key]=!sa[key];el.classList.toggle('on',!!sa[key]);}
+function syncVodTgl(id,val){const e=gi(id);if(e)e.classList.toggle('on',val!==false);}
+
+// Renders a sortable row list into a container element
+function renderVodRowList(containerId, orderArr, labelsMap, rcObj, onChanged){
+  const el=gi(containerId); if(!el) return;
+  el.innerHTML='';
+  const n=orderArr.length;
+  orderArr.forEach(function(key,i){
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:8px;padding:10px 4px;border-bottom:1px solid var(--bd)';
+    // Arrow buttons
+    const arrows=document.createElement('div');
+    arrows.style.cssText='display:flex;flex-direction:column;gap:0;flex-shrink:0';
+    ['▲','▼'].forEach(function(sym,d){
+      const btn=document.createElement('button');
+      btn.textContent=sym;btn.style.cssText='background:none;border:none;color:var(--t3);cursor:pointer;font-size:10px;padding:1px 5px;line-height:1.1';
+      btn.disabled=(d===0&&i===0)||(d===1&&i===n-1);
+      btn.onclick=function(){
+        const dir=d===0?-1:1; const j=i+dir;
+        const tmp=orderArr[j];orderArr[j]=orderArr[i];orderArr[i]=tmp;
+        onChanged(orderArr);
+        renderVodRowList(containerId,orderArr,labelsMap,rcObj,onChanged);
+      };
+      arrows.appendChild(btn);
+    });
+    row.appendChild(arrows);
+    // Label
+    const lbl=document.createElement('div');lbl.style.cssText='flex:1;font-size:13px;color:var(--t1)';lbl.textContent=labelsMap[key]||key;
+    row.appendChild(lbl);
+    // Toggle
+    const tgl=document.createElement('div');tgl.className='tgl'+(rcObj[key]!==false?' on':'');tgl.style.cssText='flex-shrink:0';
+    tgl.onclick=function(){rcObj[key]=(rcObj[key]===false)?true:false;this.classList.toggle('on',rcObj[key]!==false);};
+    row.appendChild(tgl);
+    el.appendChild(row);
+  });
+}
+
+function renderVod(){
+  const vc=vodCfg();const rc=vc.rowCfg;const src=vc.showRowCfg;const dc=vc.displayCfg||{};const sa=vc.standaloneRepo||{};
+  sv('vod-tmdb-key',vc.tmdbKey||'');
+  sv('vod-per-row',dc.perRow||25);
+  sv('vod-sort-by',dc.sortBy||'default');
+  sv('vod-movie-kw',vc.movieKw||'');
+  sv('vod-series-kw',vc.seriesKw||'');
+  sv('vod-exclude-kw',vc.excludeKw||'');
+  sv('vod-sa-url',sa.url||'');
+  sv('vod-sa-name',sa.name||'');
+  syncVodTgl('vod-tgl-itv',vc.enableItvMatch);
+  syncVodTgl('vod-tgl-scan',vc.autoScan);
+  syncVodTgl('vod-tgl-sa-only',sa.useOnly);
+  // Render sortable lists
+  renderVodRowList('vod-movie-row-list',vc.rowOrder,MOVIE_ROW_LABELS,rc,function(o){vc.rowOrder=o;});
+  renderVodRowList('vod-show-row-list',vc.showRowOrder,SHOW_ROW_LABELS,src,function(o){vc.showRowOrder=o;});
+}
+
 // ═══ Render all ═══════════════════════════════════════════════════════════════
 function renderAll(){
   renderChannels();renderRepos();renderEpg();
@@ -1413,7 +1614,7 @@ function renderAll(){
   syncTgl('tgl-allGamesExtra',!!cfg.settings.allGamesExtraEnabled);
   if(!cfg.settings.excludedLeagues)cfg.settings.excludedLeagues=[];
   if(cfg.settings.sportDefaultMyTeams===undefined)cfg.settings.sportDefaultMyTeams=true;
-  renderHdhr();renderPlex();renderDvr();renderIcam();renderNetwork();renderLocal();
+  renderVod();renderHdhr();renderPlex();renderDvr();renderIcam();renderNetwork();renderLocal();
   renderStartupSel();
   renderGeneral();renderPlayback();renderLocalities();updateBadges();
 }
@@ -1429,6 +1630,17 @@ async function openFile(){
     cfg={...b,...parsed,settings:{...b.settings,...(parsed.settings||{})}};
     if(!cfg.items)cfg.items=[];
     if(cfg.settings.plex)cfg.settings.plex={...b.settings.plex,...cfg.settings.plex};
+    // Merge vodConfig sub-objects properly
+    if(cfg.settings.vodConfig){
+      const bvc=b.settings.vodConfig||{};
+      cfg.settings.vodConfig={...bvc,...cfg.settings.vodConfig};
+      if(cfg.settings.vodConfig.standaloneRepo)cfg.settings.vodConfig.standaloneRepo={...(bvc.standaloneRepo||{}),...cfg.settings.vodConfig.standaloneRepo};
+      if(cfg.settings.vodConfig.displayCfg)cfg.settings.vodConfig.displayCfg={...(bvc.displayCfg||{}),...cfg.settings.vodConfig.displayCfg};
+      if(cfg.settings.vodConfig.rowCfg)cfg.settings.vodConfig.rowCfg={...(bvc.rowCfg||{}),...cfg.settings.vodConfig.rowCfg};
+      if(cfg.settings.vodConfig.showRowCfg)cfg.settings.vodConfig.showRowCfg={...(bvc.showRowCfg||{}),...cfg.settings.vodConfig.showRowCfg};
+      if(!cfg.settings.vodConfig.rowOrder)cfg.settings.vodConfig.rowOrder=(bvc.rowOrder||MOVIE_ROW_DEF).slice();
+      if(!cfg.settings.vodConfig.showRowOrder)cfg.settings.vodConfig.showRowOrder=(bvc.showRowOrder||SHOW_ROW_DEF).slice();
+    }
     if(cfg.settings.dvrCfg)cfg.settings.dvrCfg={...b.settings.dvrCfg,...cfg.settings.dvrCfg};
     (cfg.settings.sportLeagues||[]).forEach(lg=>{lg.cachedGamesByPath={};lg.cacheDate='';});
     // Migrate old per-league pinnedTeams → global myTeams (one-time)
