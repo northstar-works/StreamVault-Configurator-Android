@@ -467,41 +467,115 @@ code{background:var(--c2);padding:1px 5px;border-radius:3px;font-size:10px}
 <!-- ═══ ICAM ═══ -->
 <div class="panel" id="panel-icam">
   <div class="ph">iCam — IP Cameras</div>
-  <div class="pd">Add RTSP, ONVIF, RTMP, or SRT cameras. They appear in the iCam library tab.</div>
-  <div id="icam-list"></div>
-  <button class="add-btn" onclick="addCam()">＋ Add Camera</button>
+  <div class="pd">Add RTSP/ONVIF IP cameras. They appear in the iCam library tab on Fire TV.</div>
+
+  <div class="ss">
+    <h3>🔍 Scan LAN for Cameras</h3>
+    <p style="font-size:12px;color:var(--t2);margin-bottom:8px">Scans your local network for devices responding on common RTSP/ONVIF ports.</p>
+    <button class="bc" style="width:100%;padding:9px" onclick="icamScanLan()">📡 Scan Network for Cameras</button>
+    <div id="icam-scan-results" style="display:none;margin-top:10px">
+      <div style="font-size:10px;color:var(--ac);font-weight:700;margin-bottom:6px">Discovered Devices — tap Use to fill form</div>
+      <div id="icam-scan-list"></div>
+    </div>
+  </div>
+
+  <div class="ss">
+    <h3>Add Camera</h3>
+    <div class="field"><label class="fl">Camera Name</label>
+      <input id="ic-name" placeholder="Front Door, Backyard…">
+    </div>
+    <div class="rw">
+      <div class="field" style="flex:2"><label class="fl">Host / IP</label>
+        <input id="ic-host" placeholder="192.168.1.50">
+      </div>
+      <div class="field" style="max-width:90px"><label class="fl">RTSP Port</label>
+        <input id="ic-port" type="number" placeholder="554">
+      </div>
+    </div>
+    <div class="rw">
+      <div class="field"><label class="fl">Username</label>
+        <input id="ic-user" placeholder="admin" autocomplete="username">
+      </div>
+      <div class="field"><label class="fl">Password</label>
+        <input id="ic-pass" type="password" placeholder="••••••" autocomplete="current-password">
+      </div>
+    </div>
+    <div class="field"><label class="fl" style="font-weight:600;color:var(--ac)">Stream Paths (relative to host)</label></div>
+    <div class="rw">
+      <div class="field"><label class="fl">FHD path</label><input id="ic-fhd" placeholder="/live/ch0"></div>
+      <div class="field"><label class="fl">HD path (default)</label><input id="ic-hd" placeholder="/live/ch1"></div>
+      <div class="field"><label class="fl">SD path</label><input id="ic-sd" placeholder="/live/ch2"></div>
+    </div>
+    <p class="hint">Leave paths blank for single-stream cameras. With paths set, 3 stream variants are added.</p>
+    <div class="field"><label class="fl">ONVIF Port <span style="color:var(--t3)">(optional)</span></label>
+      <input id="ic-onvif" type="number" placeholder="8890" style="max-width:100px">
+    </div>
+    <button class="bs" style="width:100%;margin-top:4px" onclick="icamAddCamera()">＋ Add Camera</button>
+  </div>
+
+  <div class="ss">
+    <h3>Configured Cameras</h3>
+    <div id="icam-list"></div>
+  </div>
 </div>
 
 <!-- ═══ NETWORK ═══ -->
 <div class="panel" id="panel-network">
   <div class="ph">Network Sources</div>
-  <div class="pd">Samba/SMB and FTP network media sources. Appear in the Network library tab.</div>
+  <div class="pd">Samba/SMB shares and FTP sources. Each saved share appears in the Fire TV Network library tab.</div>
+
   <div class="ss">
-    <h3>LAN Discovery</h3>
-    <div class="sr">
-      <div><div class="sl">Auto-scan local network</div><div class="sd">Discover media servers at startup</div></div>
+    <h3>🖥 Samba / SMB Shares</h3>
+    <div class="sr" style="margin-bottom:10px">
+      <div><div class="sl">Auto-scan for media servers at startup</div></div>
       <div class="tgl" id="tgl-lanScan" onclick="tglNetCfg(this,'lanScanAuto')"></div>
     </div>
-  </div>
-  <div class="ss">
-    <h3>Samba / SMB Share</h3>
-    <div class="rw">
-      <div class="field"><label class="fl">Host / IP</label>
-        <input id="f-smb-host" placeholder="192.168.1.10" oninput="cfg.settings.networkCfg['s-smb-host']=this.value">
+
+    <!-- Saved shares list -->
+    <div id="smb-shares-list" style="margin-bottom:10px"></div>
+
+    <!-- Add share form -->
+    <div id="smb-add-form" style="background:var(--c2);border:1px solid var(--bd);border-radius:var(--rs);padding:12px;display:none">
+      <div style="font-size:10px;font-weight:700;color:var(--ac);margin-bottom:8px">Add SMB Share</div>
+      <div class="rw">
+        <div class="field" style="flex:2"><label class="fl">Hostname / IP</label>
+          <input id="smb-f-host" placeholder="192.168.0.103 or server-name">
+        </div>
+        <div class="field" style="max-width:80px"><label class="fl">Port</label>
+          <input id="smb-f-port" type="number" placeholder="445">
+        </div>
       </div>
-      <div class="field"><label class="fl">Share name</label>
-        <input id="f-smb-share" placeholder="Media" oninput="cfg.settings.networkCfg['s-smb-share']=this.value">
+      <div class="rw">
+        <div class="field"><label class="fl">Share Name</label>
+          <input id="smb-f-share" placeholder="media">
+        </div>
+        <div class="field"><label class="fl">Subfolder (optional)</label>
+          <input id="smb-f-sub" placeholder="movies">
+        </div>
+      </div>
+      <div class="rw">
+        <div class="field"><label class="fl">Username</label>
+          <input id="smb-f-user" placeholder="Optional" autocomplete="username">
+        </div>
+        <div class="field"><label class="fl">Password</label>
+          <input id="smb-f-pass" type="password" placeholder="Optional" autocomplete="current-password">
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--t2);margin-bottom:6px">Show media types:</div>
+      <div style="display:flex;gap:10px;margin-bottom:10px">
+        <label style="font-size:11px;display:flex;align-items:center;gap:4px"><input type="checkbox" id="smb-t-video" checked> Videos</label>
+        <label style="font-size:11px;display:flex;align-items:center;gap:4px"><input type="checkbox" id="smb-t-audio"> Audio</label>
+        <label style="font-size:11px;display:flex;align-items:center;gap:4px"><input type="checkbox" id="smb-t-image"> Images</label>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="bc" style="flex:1" onclick="smbHideForm()">Cancel</button>
+        <button class="bs" style="flex:2" onclick="smbSaveShare()">Add Share</button>
       </div>
     </div>
-    <div class="rw">
-      <div class="field"><label class="fl">Username</label>
-        <input id="f-smb-user" placeholder="Optional" autocomplete="username" oninput="cfg.settings.networkCfg['s-smb-user']=this.value">
-      </div>
-      <div class="field"><label class="fl">Password</label>
-        <input type="password" id="f-smb-pass" placeholder="Optional" autocomplete="current-password" oninput="cfg.settings.networkCfg['s-smb-pass']=this.value">
-      </div>
-    </div>
+
+    <button class="add-btn" id="smb-add-btn" onclick="smbShowForm()">＋ Add SMB Share</button>
   </div>
+
   <div class="ss">
     <h3>FTP Source</h3>
     <div class="rw">
@@ -526,20 +600,10 @@ code{background:var(--c2);padding:1px 5px;border-radius:3px;font-size:10px}
 <!-- ═══ LOCAL ═══ -->
 <div class="panel" id="panel-local">
   <div class="ph">Local Videos</div>
-  <div class="pd">On-device video files. Appear in the Local library tab.</div>
+  <div class="pd">Local video settings are managed on the Fire TV device itself. Existing paths and settings from a loaded backup are preserved exactly as-is when injecting — nothing is changed here.</div>
   <div class="ss">
-    <h3>Local File Browsing</h3>
-    <div class="sr">
-      <div><div class="sl">Enable local file browsing</div><div class="sd">Browse device storage for video files</div></div>
-      <div class="tgl" id="tgl-localEnable" onclick="tglSet(this,'localEnable')"></div>
-    </div>
-    <div class="field" style="margin-top:10px">
-      <label class="fl">Default folder path</label>
-      <input id="f-localPath" placeholder="Movies, Downloads/Videos…"
-        oninput="cfg.settings.localPath=this.value">
-      <div class="hint">Leave blank to let the user choose on first launch. Supports relative paths like <code>Movies</code> or absolute paths like <code>/storage/emulated/0/Movies</code>.</div>
-    </div>
-    <p style="font-size:10px;color:var(--t3);margin-top:6px">Supports MP4, MKV, AVI, MOV, TS files.</p>
+    <h3>Current Settings (from loaded config)</h3>
+    <div id="local-readonly-display" style="font-size:12px;color:var(--t2);line-height:1.7">Load a backup JSON to see current local video settings.</div>
   </div>
 </div>
 
@@ -913,9 +977,9 @@ function blank(){return{
     sportLeagueFilterEnabled:true,sportLeagues:[],sportShowPastGames:true,
     myTeams:[], // [{name, espnPath, leagueLabel}] — global, applied to all leagues
     excludedLeagues:[], allGamesExtraEnabled:false, sportDefaultMyTeams:true,
-    localEnable:true,localPath:'',
+    localEnable:true,localPath:'',localPaths:[],
     icamCfg:{proto:'rtsp',host:'',port:'554',user:'',pass:'',name:''},
-    networkCfg:{lanScanAuto:false},
+    networkCfg:{lanScanAuto:false,smbSources:[]},
     hdhr:{
       devices:[], repoChannels:[], selectedChannelKeys:[],
       remoteBaseUrl:'', preferRemote:false, tailscaleMode:true,
@@ -1356,83 +1420,150 @@ function renderDvr(){
 }
 
 // ═══ iCAM ═════════════════════════════════════════════════════════════════════
+// ═══ iCAM ════════════════════════════════════════════════════════════════════
 function getCams(){
-  if(!cfg.settings.icamCfg)cfg.settings.icamCfg={};
-  return cfg.settings.icamCfg.cameras||[];
+  if(!cfg.settings.icamCfg)cfg.settings.icamCfg={cameras:[]};
+  if(!cfg.settings.icamCfg.cameras)cfg.settings.icamCfg.cameras=[];
+  return cfg.settings.icamCfg.cameras;
 }
 function renderIcam(){
-  if(!cfg.settings.icamCfg)cfg.settings.icamCfg={};
+  if(!cfg.settings.icamCfg)cfg.settings.icamCfg={cameras:[]};
   if(!cfg.settings.icamCfg.cameras)cfg.settings.icamCfg.cameras=[];
+  gi('nb-icam').textContent=getCams().length;
   const el=gi('icam-list');if(!el)return;
   const cams=cfg.settings.icamCfg.cameras;
-  el.innerHTML=cams.length?cams.map((cam,i)=>`
-    <div class="card">
+  if(!cams.length){el.innerHTML='<div style="font-size:12px;color:var(--t3);padding:8px">No cameras configured yet.</div>';return;}
+  el.innerHTML=cams.map((c,i)=>`
+    <div class="card" style="margin-bottom:8px">
       <div class="card-head">
-        <div class="card-name">${esc(cam.name||'Camera '+(i+1))}</div>
-        <button class="del-btn" onclick="rmCam(${i})">✕</button>
+        <span style="font-size:18px">&#x1F4F7;</span>
+        <div class="card-name">${esc(c.name||c.host||'Camera '+(i+1))}</div>
+        <button class="bc" style="padding:4px 10px;font-size:10px" onclick="icamDelCamera(${i})">Remove</button>
       </div>
-      <div class="rw">
-        <div class="field"><label class="fl">Protocol</label>
-          <select onchange="cfg.settings.icamCfg.cameras[${i}].proto=this.value">
-            ${['rtsp','onvif','rtmp','srt'].map(p=>`<option${cam.proto===p?' selected':''}>${p.toUpperCase()}</option>`).join('')}
-          </select>
-        </div>
-        <div class="field" style="flex:2"><label class="fl">Host / Stream URL</label>
-          <input value="${esc(cam.host||'')}" placeholder="192.168.1.50 or rtsp://…/stream"
-            oninput="cfg.settings.icamCfg.cameras[${i}].host=this.value">
-        </div>
-        <div class="field" style="max-width:90px"><label class="fl">Port</label>
-          <input type="number" value="${esc(cam.port||'554')}" placeholder="554"
-            oninput="cfg.settings.icamCfg.cameras[${i}].port=this.value">
-        </div>
+      <div style="font-size:11px;color:var(--t2)">
+        ${esc(c.host||'')}:${c.port||554}
+        ${c.user?' &middot; '+esc(c.user):''}
+        ${c.pathHd?' &middot; HD:'+esc(c.pathHd):''}
+        ${c.onvifPort?' &middot; ONVIF:'+c.onvifPort:''}
       </div>
-      <div class="rw">
-        <div class="field"><label class="fl">Username</label>
-          <input value="${esc(cam.user||'')}" placeholder="admin" autocomplete="username"
-            oninput="cfg.settings.icamCfg.cameras[${i}].user=this.value">
-        </div>
-        <div class="field"><label class="fl">Password</label>
-          <input type="password" value="${esc(cam.pass||'')}" placeholder="••••••"
-            oninput="cfg.settings.icamCfg.cameras[${i}].pass=this.value">
-        </div>
-      </div>
-      <div class="field"><label class="fl">Camera Name</label>
-        <input value="${esc(cam.name||'')}" placeholder="Front Door, Driveway…"
-          oninput="cfg.settings.icamCfg.cameras[${i}].name=this.value">
-      </div>
-    </div>`).join(''):'<p style="font-size:11px;color:var(--t3)">No cameras configured yet.</p>';
+    </div>`).join('');
   updateBadges();
 }
-function addCam(){
-  if(!cfg.settings.icamCfg)cfg.settings.icamCfg={};
-  if(!cfg.settings.icamCfg.cameras)cfg.settings.icamCfg.cameras=[];
-  cfg.settings.icamCfg.cameras.push({proto:'rtsp',host:'',port:'554',user:'',pass:'',name:''});
-  renderIcam();
+function icamClearForm(){
+  ['ic-name','ic-host','ic-port','ic-user','ic-pass','ic-fhd','ic-hd','ic-sd','ic-onvif'].forEach(function(id){var el=gi(id);if(el)el.value='';});
 }
-function rmCam(i){cfg.settings.icamCfg.cameras.splice(i,1);renderIcam();}
+function icamFillForm(data){
+  sv('ic-name',data.name||'');sv('ic-host',data.host||data.ip||'');
+  sv('ic-port',data.port||'554');sv('ic-user',data.user||'');sv('ic-pass',data.pass||'');
+  sv('ic-fhd',data.pathFhd||'');sv('ic-hd',data.pathHd||'');sv('ic-sd',data.pathSd||'');
+  sv('ic-onvif',data.onvifPort||'');
+}
+function icamAddCamera(){
+  const name=(gi('ic-name').value||'').trim();
+  const host=(gi('ic-host').value||'').trim();
+  if(!host){toast('Host / IP is required');return;}
+  const cam={
+    name:name||host, host:host, port:parseInt(gi('ic-port').value)||554,
+    user:(gi('ic-user').value||'').trim(), pass:(gi('ic-pass').value||'').trim(),
+    pathFhd:(gi('ic-fhd').value||'').trim(), pathHd:(gi('ic-hd').value||'').trim(),
+    pathSd:(gi('ic-sd').value||'').trim(), onvifPort:(gi('ic-onvif').value||'').trim()
+  };
+  if(!cfg.settings.icamCfg)cfg.settings.icamCfg={cameras:[]};
+  if(!cfg.settings.icamCfg.cameras)cfg.settings.icamCfg.cameras=[];
+  cfg.settings.icamCfg.cameras.push(cam);
+  icamClearForm();
+  renderIcam();
+  toast('Camera added');
+}
+function icamDelCamera(i){getCams().splice(i,1);renderIcam();toast('Camera removed');}
+async function icamScanLan(){
+  const btn=document.querySelector('#panel-icam button.bc');
+  if(btn){btn.disabled=true;btn.textContent='Scanning...';}
+  const res=gi('icam-scan-results');const list=gi('icam-scan-list');
+  if(res)res.style.display='none';
+  try{
+    const results=await window.API.networkScan(554);
+    if(btn){btn.disabled=false;btn.textContent='Scan Network for Cameras';}
+    if(!results||!results.length){toast('No cameras found on LAN');return;}
+    if(list)list.innerHTML=results.map(function(d){
+      return '<div onclick="icamFillForm({host:\''+d.ip+'\',port:554})" style="padding:8px 10px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);margin-bottom:4px;cursor:pointer;font-size:12px"><strong>'+esc(d.ip)+'</strong><span style="color:var(--t3);margin-left:8px">port 554 &middot; tap to fill form</span></div>';
+    }).join('');
+    if(res)res.style.display='';
+  }catch(e){
+    if(btn){btn.disabled=false;btn.textContent='Scan Network for Cameras';}
+    toast('Scan error: '+e.message);
+  }
+}
 
-// ═══ NETWORK ══════════════════════════════════════════════════════════════════
+// ═══ NETWORK (SMB multi-share + FTP) ══════════════════════════════════════════
+function getSmbSources(){
+  if(!cfg.settings.networkCfg)cfg.settings.networkCfg={lanScanAuto:false,smbSources:[]};
+  if(!cfg.settings.networkCfg.smbSources)cfg.settings.networkCfg.smbSources=[];
+  return cfg.settings.networkCfg.smbSources;
+}
+function renderNetwork(){
+  if(!cfg.settings.networkCfg)cfg.settings.networkCfg={lanScanAuto:false,smbSources:[]};
+  const nc=cfg.settings.networkCfg;
+  syncTgl('tgl-lanScan',!!nc.lanScanAuto);
+  sv('f-ftp-host',nc['s-ftp-host']||'');sv('f-ftp-port',nc['s-ftp-port']||'');
+  sv('f-ftp-user',nc['s-ftp-user']||'');sv('f-ftp-pass',nc['s-ftp-pass']||'');
+  renderSmbList();
+}
+function renderSmbList(){
+  const el=gi('smb-shares-list');if(!el)return;
+  const sources=getSmbSources();
+  if(!sources.length){el.innerHTML='<div style="font-size:12px;color:var(--t3);padding:6px 0">No shares added yet.</div>';return;}
+  el.innerHTML=sources.map(function(s,i){
+    return '<div class="card" style="margin-bottom:8px"><div class="card-head"><span>&#x1F5A5;</span><div class="card-name">\\\\'+esc(s.hostname||s.ip||s.host||'')+'\\'+esc(s.share||'')+'</div><button class="bc" style="padding:4px 10px;font-size:10px" onclick="smbDelShare('+i+')">Remove</button></div><div style="font-size:11px;color:var(--t2)">'+esc(s.ip||s.host||'')+(s.subfolder?' / '+esc(s.subfolder):'')+(s.user?' &middot; '+esc(s.user):'')+'</div></div>';
+  }).join('');
+}
+function smbShowForm(){var f=gi('smb-add-form');var btn=gi('smb-add-btn');if(f)f.style.display='';if(btn)btn.style.display='none';}
+function smbHideForm(){
+  var f=gi('smb-add-form');var btn=gi('smb-add-btn');
+  if(f)f.style.display='none';if(btn)btn.style.display='';
+  ['smb-f-host','smb-f-port','smb-f-share','smb-f-sub','smb-f-user','smb-f-pass'].forEach(function(id){var el=gi(id);if(el)el.value='';});
+}
+function smbSaveShare(){
+  const host=(gi('smb-f-host').value||'').trim();
+  const share=(gi('smb-f-share').value||'').trim();
+  if(!host){toast('Hostname / IP is required');return;}
+  const types=[];
+  var tv=gi('smb-t-video'),ta=gi('smb-t-audio'),ti=gi('smb-t-image');
+  if(tv&&tv.checked)types.push('video');if(ta&&ta.checked)types.push('audio');if(ti&&ti.checked)types.push('image');
+  const entry={
+    id:'smb'+Date.now().toString(36), hostname:host, ip:host, host:host,
+    port:parseInt((gi('smb-f-port').value||'445'))||445,
+    share:share, subfolder:(gi('smb-f-sub').value||'').trim(),
+    user:(gi('smb-f-user').value||'').trim(), pass:(gi('smb-f-pass').value||'').trim(),
+    mediaTypes:types.length?types:['video']
+  };
+  getSmbSources().push(entry);
+  smbHideForm();renderSmbList();
+  toast('Share added');
+}
+function smbDelShare(i){getSmbSources().splice(i,1);renderSmbList();toast('Share removed');}
 function tglNetCfg(el,key){
   if(!cfg.settings.networkCfg)cfg.settings.networkCfg={};
   cfg.settings.networkCfg[key]=!cfg.settings.networkCfg[key];
   el.classList.toggle('on',!!cfg.settings.networkCfg[key]);
 }
-function renderNetwork(){
-  if(!cfg.settings.networkCfg)cfg.settings.networkCfg={};
-  const nc=cfg.settings.networkCfg;
-  syncTgl('tgl-lanScan',!!nc.lanScanAuto);
-  sv('f-smb-host',nc['s-smb-host']);sv('f-smb-share',nc['s-smb-share']);
-  sv('f-smb-user',nc['s-smb-user']);sv('f-smb-pass',nc['s-smb-pass']);
-  sv('f-ftp-host',nc['s-ftp-host']);sv('f-ftp-port',nc['s-ftp-port']);
-  sv('f-ftp-user',nc['s-ftp-user']);sv('f-ftp-pass',nc['s-ftp-pass']);
-}
 
-// ═══ LOCAL ════════════════════════════════════════════════════════════════════
+// ═══ LOCAL (read-only passthrough) ═══════════════════════════════════════════
 function renderLocal(){
-  syncTgl('tgl-localEnable',cfg.settings.localEnable!==false);
-  sv('f-localPath',cfg.settings.localPath);
+  const el=gi('local-readonly-display');if(!el)return;
+  const s=cfg.settings;
+  const lines=[];
+  lines.push('<strong>Enabled:</strong> '+(s.localEnable!==false?'Yes':'No'));
+  if(s.localPath)lines.push('<strong>Default path:</strong> '+esc(s.localPath));
+  const paths=s.localPaths||[];
+  if(paths.length){
+    lines.push('<strong>Configured paths ('+paths.length+'):</strong>');
+    paths.forEach(function(p){lines.push('&nbsp;&nbsp;&bull; '+esc(p.label||p.uri)+(p.scanned?' &#x2713;':''));});
+  }else{
+    lines.push('<span style="color:var(--t3)">No local paths configured.</span>');
+  }
+  el.innerHTML=lines.join('<br>');
 }
-
 // ═══ GENERAL ══════════════════════════════════════════════════════════════════
 function renderGeneral(){
   sv('sel-tvMode',cfg.settings.tvMode||'auto');
