@@ -30,10 +30,10 @@ Designed for landscape use on Samsung Galaxy / large-screen phones.
 
 ## Usage
 - Open the app — it launches in landscape mode showing the full configurator UI
-- Use the **⚡ USB Inject** panel → **Network Inject** section to push settings to a Fire TV on the same Wi-Fi
-- Enter the Fire TV's IP, tap **Test Connection** to confirm StreamVault is running, then **Push Settings**
+- Use the **⚡ Inject** panel → **Network Inject** section to push settings to a device on the same Wi-Fi
+- Enter the Fire TV's IP, tap **Test Connection** to confirm StreamVault is running, then **Push to Device**
 - **Open / Save As** work with Android's file picker (Downloads, Google Drive, etc.)
-- **Save to USB inject/** saves to `Downloads/StreamVault/inject/` on the phone
+- **Save to inject/** saves to `Downloads/StreamVault/inject/` on the phone
 
 ## Network Inject requirements
 - Phone and Fire TV must be on the same Wi-Fi network

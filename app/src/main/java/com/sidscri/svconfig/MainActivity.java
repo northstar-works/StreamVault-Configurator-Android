@@ -93,7 +93,7 @@ public class MainActivity extends Activity {
         ws.setUseWideViewPort(true);
         // Use a desktop-like UA so the configurator layout renders correctly
         ws.setUserAgentString("Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 SVConfig/4.1");
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 SVConfig/6.1.2");
 
         webView.addJavascriptInterface(new AndroidAPI(), "AndroidAPI");
         webView.setWebViewClient(new WebViewClient() {
@@ -309,30 +309,46 @@ public class MainActivity extends Activity {
             }).start();
         }
 
-        // ── Network: Push settings to Fire TV ─────────────────────────────
+        // ── Network: Push settings to device ──────────────────────────────
         @JavascriptInterface
         public void networkInject(String ip, int port, String raw, String cbId) {
             new Thread(() -> {
+                boolean payloadSent = false;
+                HttpURLConnection conn = null;
                 try {
                     URL url = new URL("http://" + ip + ":" + port + "/inject");
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setConnectTimeout(5000);
-                    conn.setReadTimeout(5000);
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setConnectTimeout(7000);
+                    conn.setReadTimeout(15000);
                     conn.setRequestMethod("POST");
                     conn.setDoOutput(true);
-                    conn.setRequestProperty("Content-Type", "application/json");
+                    conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
                     byte[] payload = raw.getBytes(StandardCharsets.UTF_8);
                     conn.setRequestProperty("Content-Length", String.valueOf(payload.length));
                     try (OutputStream os = conn.getOutputStream()) {
                         os.write(payload);
+                        os.flush();
+                        payloadSent = true;
                     }
                     int code = conn.getResponseCode();
                     String body = readStream(code == 200 ? conn.getInputStream() : conn.getErrorStream());
-                    conn.disconnect();
                     JSONObject result = new JSONObject();
                     result.put("ok", code == 200);
                     result.put("status", code);
                     result.put("body", body);
+                    resolveJs(cbId, result.toString());
+                } catch (java.net.SocketTimeoutException e) {
+                    JSONObject result = new JSONObject();
+                    try {
+                        if (payloadSent) {
+                            result.put("ok", true);
+                            result.put("status", 202);
+                            result.put("warning", "Upload was sent, but the device did not return confirmation before timeout. StreamVault usually still applies it.");
+                        } else {
+                            result.put("ok", false);
+                            result.put("error", "Timeout before upload completed — check the IP and make sure StreamVault is open on the device.");
+                        }
+                    } catch (Exception ignored) {}
                     resolveJs(cbId, result.toString());
                 } catch (Exception e) {
                     JSONObject result = new JSONObject();
@@ -341,6 +357,8 @@ public class MainActivity extends Activity {
                         result.put("error", e.getMessage() != null ? e.getMessage() : "Connection failed");
                     } catch (Exception ignored) {}
                     resolveJs(cbId, result.toString());
+                } finally {
+                    if (conn != null) conn.disconnect();
                 }
             }).start();
         }
